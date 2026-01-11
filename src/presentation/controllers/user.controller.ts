@@ -1,4 +1,4 @@
-import { signUpUseCase } from "@application/use-cases/user.usecase";
+import { signUpUseCase } from "@application/use-cases/user/signup.usecase";
 import { Request, Response } from "express";
 
 export class UserController {
@@ -6,7 +6,6 @@ export class UserController {
     console.log(req.body);
     const { name, email, phone, password } = req.body;
     const avatar = req.file?.buffer;
-    console.log("Buffer", avatar);
 
     const input = {
       name,
@@ -23,4 +22,6 @@ export class UserController {
       message: "User registered successfully",
     });
   }
+
+  static async verifyEmail(req: Request, res: Response) {}
 }
