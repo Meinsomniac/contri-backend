@@ -8,8 +8,8 @@ const UserRouter: Router = Router();
 
 UserRouter.post(
   "/signup",
-  validator(signupSchema),
   uploadSingle("avatar"),
+  validator(signupSchema),
   UserController.signup
 );
 

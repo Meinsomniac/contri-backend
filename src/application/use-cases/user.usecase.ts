@@ -47,6 +47,7 @@ export class SignUpUsecase {
         input.avatarBuffer,
         "avatars"
       );
+      console.log("avatar", result);
       avatarUrl = result.url;
     }
 
@@ -57,6 +58,8 @@ export class SignUpUsecase {
       password: hashedPassword ?? null,
       avatar: avatarUrl ?? null,
     });
+
+    console.log("newUser", newUser.avatar);
 
     //Save user to repository
     const createdUser = await this.userRepository.create(newUser);

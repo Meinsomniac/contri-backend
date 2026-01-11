@@ -12,7 +12,7 @@ export interface RequestWithUser extends Request {
   };
 }
 
-export const errorHandler = (
+const errorHandler = (
   error: AppError,
   req: RequestWithUser,
   res: Response,
@@ -34,3 +34,5 @@ export const errorHandler = (
     ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
   });
 };
+
+export default errorHandler;

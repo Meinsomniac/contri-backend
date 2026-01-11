@@ -3,7 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 // import rateLimit from "express-rate-limit";
 import { config } from "dotenv";
-import { errorHandler } from "@infrastructure/middleware/errorHandler";
+import errorHandler from "@infrastructure/middleware/errorHandler";
 import router from "@presentation/routes/route";
 
 //load environment variables

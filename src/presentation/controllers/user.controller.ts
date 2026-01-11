@@ -3,15 +3,17 @@ import { Request, Response } from "express";
 
 export class UserController {
   static async signup(req: Request, res: Response) {
+    console.log(req.body);
     const { name, email, phone, password } = req.body;
-    const avatar = req.file;
+    const avatar = req.file?.buffer;
+    console.log("Buffer", avatar);
 
     const input = {
       name,
       email,
       phone,
       password,
-      avatarUrl: avatar,
+      avatarBuffer: avatar,
     };
 
     const {} = await signUpUseCase.execute(input);
