@@ -2,6 +2,6 @@ export interface OtpVerificationToken {
   id: string;
   userId: string;
   secret: string;
-  expireAt: Date;
+  expiresAt: Date;
   createdAt: Date;
 }

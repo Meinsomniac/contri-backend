@@ -1,0 +1,36 @@
+import { IOtpVerificationRepository } from "@application/interfaces/repositories/otp-verification.interface";
+import { OtpVerificationToken } from "@domain/entities/otp-verification.entity";
+import { PrismaClient } from "../generated/prisma/client";
+import prisma from "../prisma/prisma";
+
+export class OtpVerificationRepository implements IOtpVerificationRepository {
+  private db: PrismaClient;
+  constructor(db: PrismaClient) {
+    this.db = db;
+  }
+  async create(
+    data: Omit<OtpVerificationToken, "id" | "createdAt">
+  ): Promise<OtpVerificationToken> {
+    return await this.db.otpVerification.create({
+      data: {
+        expiresAt: data.expiresAt,
+        secret: data.secret,
+        userId: data.userId,
+      },
+    });
+  }
+
+  async findByUserId(userId: string): Promise<OtpVerificationToken | null> {
+    return await this.db.otpVerification.findFirst({
+      where: {
+        userId,
+      },
+    });
+  }
+
+  async deleteById(id: string): Promise<void> {
+    await this.db.otpVerification.delete({ where: { id } });
+  }
+}
+
+export const otpVerificationRepository = new OtpVerificationRepository(prisma);

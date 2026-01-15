@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const SALT_ROUNDS = 12;
 
@@ -17,4 +18,16 @@ export const comparePassword = (
     return false;
   }
   return bcrypt.compareSync(plainPassword, hashedPassword);
+};
+
+export const generateTotp = () => {
+  return crypto.randomInt(100000, 999999).toString();
+};
+
+export const generateTotpSecret = (otp: string): string => {
+  return hashPassword(otp);
+};
+
+export const compareOtp = (otp: string, hashedOtp: string) => {
+  return comparePassword(otp, hashedOtp);
 };

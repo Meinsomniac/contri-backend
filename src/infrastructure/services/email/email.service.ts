@@ -2,8 +2,9 @@ import nodemailer, { Transporter } from "nodemailer";
 import "dotenv/config";
 import { SendMailProps } from "./types";
 import templateMapper from "./template-mapper";
+import { IEmailService } from "@application/interfaces/services/email.interface";
 
-export default class EmailService {
+export default class EmailService implements IEmailService {
   private transporter: Transporter;
   constructor() {
     this.transporter = nodemailer.createTransport({

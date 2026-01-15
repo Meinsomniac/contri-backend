@@ -53,6 +53,7 @@ export class SignUpUsecase {
       phone: input.phone ?? null,
       password: hashedPassword ?? null,
       avatar: avatarUrl ?? null,
+      isOnboarded: true,
     });
 
     //Save user to repository
