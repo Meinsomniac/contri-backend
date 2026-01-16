@@ -12,8 +12,6 @@ export default async function templateMapper({
   data,
 }: TemplateMapper) {
   const templatePath = path.join(__dirname, "templates", `${templateName}.ejs`);
-  console.log({ templatePath, data });
-  console.log(fs.existsSync(templatePath));
   const html = await ejs.renderFile(templatePath, data);
   return html;
 }
