@@ -34,6 +34,20 @@ model User {
   @@index([phone])
   @@index([email])
   @@index([createdAt])
+
+  otpVerificationsTokens OtpVerification[]
+}
+
+model OtpVerification {
+  id String @id @default(cuid())
+  userId String
+  secret String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // model UserSettings {

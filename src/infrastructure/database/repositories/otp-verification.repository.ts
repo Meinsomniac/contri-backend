@@ -2,6 +2,7 @@ import { IOtpVerificationRepository } from "@application/interfaces/repositories
 import { OtpVerificationToken } from "@domain/entities/otp-verification.entity";
 import { PrismaClient } from "../generated/prisma/client";
 import prisma from "../prisma/prisma";
+import { TransactionClient } from "../generated/prisma/internal/prismaNamespace";
 
 export class OtpVerificationRepository implements IOtpVerificationRepository {
   private db: PrismaClient;
@@ -9,9 +10,11 @@ export class OtpVerificationRepository implements IOtpVerificationRepository {
     this.db = db;
   }
   async create(
-    data: Omit<OtpVerificationToken, "id" | "createdAt">
+    data: Omit<OtpVerificationToken, "id" | "createdAt">,
+    tx: TransactionClient
   ): Promise<OtpVerificationToken> {
-    return await this.db.otpVerification.create({
+    const client = tx ?? this.db;
+    return await client.otpVerification.create({
       data: {
         expiresAt: data.expiresAt,
         secret: data.secret,

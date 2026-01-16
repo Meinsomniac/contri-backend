@@ -1,9 +1,19 @@
+import { IOtpVerificationRepository } from "@application/interfaces/repositories/otp-verification.interface";
 import { IUserRepository } from "@application/interfaces/repositories/user.interface";
+import { IEmailService } from "@application/interfaces/services/email.interface";
 import { User } from "@domain/entities/user.entity";
+import { PrismaClient } from "@infrastructure/database/generated/prisma/client";
+import prisma from "@infrastructure/database/prisma/prisma";
+import { otpVerificationRepository } from "@infrastructure/database/repositories/otp-verification.repository";
 import { userRepository } from "@infrastructure/database/repositories/user.repository";
 import CloudinaryService from "@infrastructure/services/cloudinary.service";
+import { emailService } from "@infrastructure/services/email/email.service";
 import { AppError } from "@shared/error/AppError";
-import { hashPassword } from "@shared/utils/password";
+import {
+  generateTotp,
+  generateTotpSecret,
+  hashPassword,
+} from "@shared/utils/password";
 import { generateTokens } from "@shared/utils/token";
 
 interface SignUpInput {
@@ -21,7 +31,12 @@ interface SignUpOutput {
 }
 
 export class SignUpUsecase {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(
+    private userRepository: IUserRepository,
+    private otpVerificationRepository: IOtpVerificationRepository,
+    private emailService: IEmailService,
+    private db: PrismaClient
+  ) {}
 
   async execute(input: SignUpInput): Promise<SignUpOutput> {
     // Vaidate required fields
@@ -56,8 +71,40 @@ export class SignUpUsecase {
       isOnboarded: true,
     });
 
-    //Save user to repository
-    const createdUser = await this.userRepository.create(newUser);
+    let createdUser = {} as User;
+    this.db.$transaction(async (tx) => {
+      //Save user to repository
+      createdUser = await this.userRepository.create(newUser, tx);
+
+      //send otp for email verification
+      const otp = generateTotp();
+      const hashedOtp = generateTotpSecret(otp);
+      const expiresAt = new Date(Date.now() + 3 * 60000);
+
+      const otpToken = await otpVerificationRepository.create(
+        {
+          secret: hashedOtp,
+          userId: createdUser.id,
+          expiresAt,
+        },
+        tx
+      );
+
+      if (otpToken) {
+        await this.emailService.sendMail({
+          from: process.env.MAILING_USER as string,
+          to: createdUser.email as string,
+          subject: "Email Verification",
+          title: "Otp for email verification",
+          template: "otp",
+          data: {
+            title: "Email Verification",
+            otp,
+            duration: "3",
+          },
+        });
+      }
+    });
 
     //Generate tokens (placeholder logic)
     const { password, createdAt, updatedAt, ...userInfo } = createdUser;
@@ -67,4 +114,9 @@ export class SignUpUsecase {
   }
 }
 
-export const signUpUseCase = new SignUpUsecase(userRepository);
+export const signUpUseCase = new SignUpUsecase(
+  userRepository,
+  otpVerificationRepository,
+  emailService,
+  prisma
+);

@@ -1,6 +1,9 @@
 import { IOtpVerificationRepository } from "@application/interfaces/repositories/otp-verification.interface";
 import { IUserRepository } from "@application/interfaces/repositories/user.interface";
 import { IEmailService } from "@application/interfaces/services/email.interface";
+import { otpVerificationRepository } from "@infrastructure/database/repositories/otp-verification.repository";
+import { userRepository } from "@infrastructure/database/repositories/user.repository";
+import { emailService } from "@infrastructure/services/email/email.service";
 import { AppError } from "@shared/error/AppError";
 import { generateTotp, generateTotpSecret } from "@shared/utils/password";
 import "dotenv/config";
@@ -28,6 +31,7 @@ export class SendVerificationOtpUsecase {
     if (existingToken)
       await this.otpVerificationRepository.deleteById(existingToken.id);
 
+    //Generate new token and store the hash
     const otp = generateTotp();
     const hashedOtp = generateTotpSecret(otp);
     const expiresAt = new Date(Date.now() + 3 * 60000);
@@ -52,3 +56,9 @@ export class SendVerificationOtpUsecase {
     });
   }
 }
+
+export const sendOtpVerificationUsercase = new SendVerificationOtpUsecase(
+  userRepository,
+  otpVerificationRepository,
+  emailService
+);

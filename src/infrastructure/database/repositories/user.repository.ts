@@ -2,6 +2,7 @@ import { IUserRepository } from "@application/interfaces/repositories/user.inter
 import { User } from "@domain/entities/user.entity";
 import { PrismaClient, User as DBUser } from "../generated/prisma/client";
 import prisma from "../prisma/prisma";
+import { TransactionClient } from "../generated/prisma/internal/prismaNamespace";
 
 export class UserRepository implements IUserRepository {
   private db: PrismaClient;
@@ -15,8 +16,9 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  async create(user: User): Promise<User> {
-    const createdUser = await this.db.user.create({
+  async create(user: User, tx?: TransactionClient): Promise<User> {
+    const client = tx ?? this.db;
+    const createdUser = await client.user.create({
       data: {
         name: user.name,
         email: user.email,
