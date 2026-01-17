@@ -28,9 +28,9 @@ export class UserController {
   }
 
   static async sendEmailOtp(req: Request, res: Response) {
-    const { email } = req.body;
+    const { email } = req.query;
 
-    await sendOtpVerificationUsercase.execute(email);
+    await sendOtpVerificationUsercase.execute(email as string);
 
     res.status(200).json({
       success: true,

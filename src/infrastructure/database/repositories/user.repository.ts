@@ -27,6 +27,7 @@ export class UserRepository implements IUserRepository {
         avatar: user.avatar,
         currency: user.currency,
         language: user.language,
+        isOnboarded: user.isOnboarded,
       },
     });
 
