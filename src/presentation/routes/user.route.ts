@@ -3,6 +3,7 @@ import { validator } from "@infrastructure/middleware/validator";
 import { UserController } from "@presentation/controllers/user.controller";
 import {
   sentEmailOtpSchema,
+  signinSchema,
   signupSchema,
   verifyOtpSchema,
 } from "@presentation/validators/user.validator";
@@ -21,6 +22,7 @@ UserRouter.post(
     validator(sentEmailOtpSchema),
     UserController.sendEmailOtp,
   )
-  .post("/verify-otp", validator(verifyOtpSchema), UserController.verifyEmail);
+  .post("/verify-otp", validator(verifyOtpSchema), UserController.verifyEmail)
+  .post("/sign-in", validator(signinSchema), UserController.signin);
 
 export default UserRouter;

@@ -1,7 +1,9 @@
 import { verifyOtpUsecase } from "@application/use-cases/common/verify-otp.usercase";
 import { sendOtpVerificationUsercase } from "@application/use-cases/user/send-otp.usercase";
+import { signinUsecase } from "@application/use-cases/user/signin.usecase";
 import { signUpUseCase } from "@application/use-cases/user/signup.usecase";
 import { Request, Response } from "express";
+import { success } from "zod";
 
 export class UserController {
   static async signup(req: Request, res: Response) {
@@ -21,6 +23,24 @@ export class UserController {
     res.status(201).json({
       success: true,
       message: "User registered successfully",
+      data: {
+        accessToken,
+        refreshToken,
+      },
+    });
+  }
+
+  static async signin(req: Request, res: Response) {
+    const { email, password } = req.body;
+
+    const { accessToken, refreshToken } = await signinUsecase.execute(
+      email,
+      password,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully",
       data: {
         accessToken,
         refreshToken,
