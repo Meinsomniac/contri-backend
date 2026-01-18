@@ -4,6 +4,7 @@ import { UserController } from "@presentation/controllers/user.controller";
 import {
   sentEmailOtpSchema,
   signupSchema,
+  verifyOtpSchema,
 } from "@presentation/validators/user.validator";
 import { Router } from "express";
 
@@ -13,11 +14,13 @@ UserRouter.post(
   "/signup",
   uploadSingle("avatar"),
   validator(signupSchema),
-  UserController.signup
-).post(
-  "/sent-email-otp",
-  validator(sentEmailOtpSchema),
-  UserController.sendEmailOtp
-);
+  UserController.signup,
+)
+  .post(
+    "/sent-email-otp",
+    validator(sentEmailOtpSchema),
+    UserController.sendEmailOtp,
+  )
+  .post("/verify-otp", validator(verifyOtpSchema), UserController.verifyEmail);
 
 export default UserRouter;

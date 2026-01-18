@@ -17,3 +17,10 @@ export const sentEmailOtpSchema = z.object({
     email: z.email("Invalid email address").min(1, "Email is required"),
   }),
 });
+
+export const verifyOtpSchema = z.object({
+  query: z.object({
+    otp: z.string().min(6, "Invalid Otp"),
+    userId: z.string().min(1, "userId is required"),
+  }),
+});

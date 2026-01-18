@@ -74,16 +74,7 @@ export class UserRepository implements IUserRepository {
     const updatedUser = await this.db.user.update({
       where: { id: user.id },
       data: {
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        password: user.password,
-        avatar: user.avatar,
-        emailVerified: user.emailVerified,
-        phoneVerified: user.phoneVerified,
-        isOnboarded: user.isOnboarded,
-        currency: user.currency,
-        language: user.language,
+        ...user,
       },
     });
 

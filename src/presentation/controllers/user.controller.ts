@@ -1,3 +1,4 @@
+import { verifyOtpUsecase } from "@application/use-cases/common/verify-otp.usercase";
 import { sendOtpVerificationUsercase } from "@application/use-cases/user/send-otp.usercase";
 import { signUpUseCase } from "@application/use-cases/user/signup.usecase";
 import { Request, Response } from "express";
@@ -38,5 +39,14 @@ export class UserController {
     });
   }
 
-  static async verifyEmail(req: Request, res: Response) {}
+  static async verifyEmail(req: Request, res: Response) {
+    const { otp, userId } = req.query;
+
+    await verifyOtpUsecase.execute(otp as string, userId as string);
+
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully",
+    });
+  }
 }
