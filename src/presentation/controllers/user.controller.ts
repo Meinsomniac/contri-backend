@@ -1,4 +1,5 @@
 import { verifyOtpUsecase } from "@application/use-cases/common/verify-otp.usercase";
+import { changePasswordUsecase } from "@application/use-cases/user/change-password.usecase";
 import { sendOtpVerificationUsercase } from "@application/use-cases/user/send-otp.usecase";
 import { signinUsecase } from "@application/use-cases/user/signin.usecase";
 import { signUpUseCase } from "@application/use-cases/user/signup.usecase";
@@ -71,7 +72,17 @@ export class UserController {
 
   static async changePassword(req: Request, res: Response) {
     const { oldPassword, newPassword } = req.body;
+    const userId = req.user?.id as string;
 
-    // const result = await
+    await changePasswordUsecase.execute({
+      newPassword,
+      oldPassword,
+      userId,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
   }
 }

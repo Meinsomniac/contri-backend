@@ -1,5 +1,8 @@
 import { IUserRepository } from "@application/interfaces/repositories/user.interface";
+import { User } from "@domain/entities/user.entity";
+import { userRepository } from "@infrastructure/database/repositories/user.repository";
 import { AppError } from "@shared/error/AppError";
+import { comparePassword, hashPassword } from "@shared/utils/password";
 
 type ChangePasswordInput = {
   oldPassword: string;
@@ -15,6 +18,33 @@ export class ChangePasswordUsercase {
 
     //fetch user
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new AppError("User does not exists", 404);
+    if (!user) {
+      throw new AppError("User does not exists", 404);
+    }
+
+    //check if old password is correct
+    const isOldPasswordCorrect = comparePassword(
+      oldPassword,
+      user.password as string,
+    );
+    if (!isOldPasswordCorrect)
+      throw new AppError("Old password is incorrect.", 403);
+
+    //Check if user is not using same old password
+    if (oldPassword === newPassword)
+      throw new AppError(
+        "New password cannot be the same as your current password",
+        403,
+      );
+
+    const updatedUser = new User(user.id, user.name, {
+      ...user,
+      password: hashPassword(newPassword),
+    });
+
+    //update user
+    await userRepository.update(updatedUser);
   }
 }
+
+export const changePasswordUsecase = new ChangePasswordUsercase(userRepository);

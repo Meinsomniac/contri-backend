@@ -19,9 +19,9 @@ export const validator = (schema: ZodType) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const message = error?.issues
-          .map((err) => `${err.path.join(".")}: ${err.message}`)
-          .join(", ");
+        const message = error?.issues?.[0]?.message;
+        // .map((err) => `${err.path.join(".")}: ${err.message}`)
+        // .join(", ");
         next(new AppError(message, 400));
       } else {
         next(new AppError("Validation failed", 400));

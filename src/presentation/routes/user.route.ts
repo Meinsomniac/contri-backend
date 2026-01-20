@@ -28,7 +28,7 @@ UserRouter.post(
   )
   .post(
     "/change-password",
-    validator(changePasswordSchema),
+    [authenticate, validator(changePasswordSchema)],
     UserController.changePassword,
   );
 

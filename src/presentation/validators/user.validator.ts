@@ -31,10 +31,10 @@ export const verifyOtpSchema = z.object({
 export const changePasswordSchema = z.object({
   body: z.object({
     oldPassword: z
-      .string()
+      .string("Old password is required")
       .min(8, "Old password must be at least 8 characters"),
     newPassword: z
-      .string()
+      .string("New password is required")
       .min(8, "New password must be at least 8 characters"),
   }),
 });

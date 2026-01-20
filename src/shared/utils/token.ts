@@ -20,7 +20,6 @@ if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
 
 export const generateAccessToken = (user: Record<string, any>): string => {
   const { hashedPassword, ...payload } = user;
-  console.log({ JWT_SECRET, JWT_REFRESH_SECRET });
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
     algorithm: "HS256",
