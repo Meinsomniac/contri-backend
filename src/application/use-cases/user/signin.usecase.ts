@@ -19,7 +19,7 @@ export class SignInUsecase {
     if (!isPasswordMatch) throw new AppError("Invalid email or password");
 
     //Generate tokens
-    const { password: userPassword, isOnboarded, ...userData } = user;
+    const { password: userPassword, ...userData } = user;
     const { accessToken, refreshToken } = generateTokens(userData);
 
     return { accessToken, refreshToken };

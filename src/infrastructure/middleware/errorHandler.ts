@@ -5,18 +5,11 @@ export interface AppError extends Error {
   statusCode?: number;
 }
 
-export interface RequestWithUser extends Request {
-  user?: {
-    id: string;
-    [key: string]: any;
-  };
-}
-
 const errorHandler = (
   error: AppError,
-  req: RequestWithUser,
+  req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const statusCode = error.statusCode || 500;
   const message = error.message || "Internal Server Error";

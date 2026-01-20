@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import { User } from "@domain/entities/user.entity";
 
 export interface GenerateTokenResponse {
   accessToken: string;
@@ -19,14 +20,19 @@ if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
 
 export const generateAccessToken = (user: Record<string, any>): string => {
   const { hashedPassword, ...payload } = user;
+  console.log({ JWT_SECRET, JWT_REFRESH_SECRET });
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
+    algorithm: "HS256",
+    // allowInvalidAsymmetricKeyTypes: true,
   });
 };
 
 export const generateRefreshToken = (user: Record<string, any>): string => {
   return jwt.sign(user, JWT_REFRESH_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRES_IN,
+    algorithm: "HS256",
+    // allowInvalidAsymmetricKeyTypes: true,
   });
 };
 
@@ -35,4 +41,15 @@ export const generateTokens = (user: object): GenerateTokenResponse => {
   const refreshToken = generateRefreshToken(user);
 
   return { accessToken, refreshToken };
+};
+
+export const decodeToken = (
+  token: string,
+): User & { iat: number; exp: number } => {
+  const decoded = jwt.decode(token, {
+    complete: true,
+  });
+
+  const payload = decoded?.payload as User & { iat: number; exp: number };
+  return payload;
 };

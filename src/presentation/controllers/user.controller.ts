@@ -1,9 +1,8 @@
 import { verifyOtpUsecase } from "@application/use-cases/common/verify-otp.usercase";
-import { sendOtpVerificationUsercase } from "@application/use-cases/user/send-otp.usercase";
+import { sendOtpVerificationUsercase } from "@application/use-cases/user/send-otp.usecase";
 import { signinUsecase } from "@application/use-cases/user/signin.usecase";
 import { signUpUseCase } from "@application/use-cases/user/signup.usecase";
 import { Request, Response } from "express";
-import { success } from "zod";
 
 export class UserController {
   static async signup(req: Request, res: Response) {
@@ -49,8 +48,7 @@ export class UserController {
   }
 
   static async sendEmailOtp(req: Request, res: Response) {
-    const { email } = req.query;
-
+    const email = req.user?.email;
     await sendOtpVerificationUsercase.execute(email as string);
 
     res.status(200).json({
@@ -60,7 +58,8 @@ export class UserController {
   }
 
   static async verifyEmail(req: Request, res: Response) {
-    const { otp, userId } = req.query;
+    const { otp } = req.query;
+    const userId = req.user?.id;
 
     await verifyOtpUsecase.execute(otp as string, userId as string);
 
@@ -68,5 +67,11 @@ export class UserController {
       success: true,
       message: "Email verified successfully",
     });
+  }
+
+  static async changePassword(req: Request, res: Response) {
+    const { oldPassword, newPassword } = req.body;
+
+    // const result = await
   }
 }

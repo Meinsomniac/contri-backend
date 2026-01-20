@@ -35,7 +35,7 @@ export class SignUpUsecase {
     private userRepository: IUserRepository,
     private otpVerificationRepository: IOtpVerificationRepository,
     private emailService: IEmailService,
-    private db: PrismaClient
+    private db: PrismaClient,
   ) {}
 
   async execute(input: SignUpInput): Promise<SignUpOutput> {
@@ -57,7 +57,7 @@ export class SignUpUsecase {
     if (input.avatarBuffer) {
       const result = await CloudinaryService.uploadStream(
         input.avatarBuffer,
-        "avatars"
+        "avatars",
       );
       avatarUrl = result.url;
     }
@@ -87,7 +87,7 @@ export class SignUpUsecase {
           userId: createdUser.id,
           expiresAt,
         },
-        tx
+        tx,
       );
 
       if (otpToken) {
@@ -118,5 +118,5 @@ export const signUpUseCase = new SignUpUsecase(
   userRepository,
   otpVerificationRepository,
   emailService,
-  prisma
+  prisma,
 );

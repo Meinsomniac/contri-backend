@@ -1,7 +1,9 @@
+import { authenticate } from "@infrastructure/middleware/authenticate";
 import { uploadSingle } from "@infrastructure/middleware/upload";
 import { validator } from "@infrastructure/middleware/validator";
 import { UserController } from "@presentation/controllers/user.controller";
 import {
+  changePasswordSchema,
   sentEmailOtpSchema,
   signinSchema,
   signupSchema,
@@ -17,12 +19,17 @@ UserRouter.post(
   validator(signupSchema),
   UserController.signup,
 )
+  .post("/sign-in", validator(signinSchema), UserController.signin)
+  .post("/sent-email-otp", authenticate, UserController.sendEmailOtp)
   .post(
-    "/sent-email-otp",
-    validator(sentEmailOtpSchema),
-    UserController.sendEmailOtp,
+    "/verify-otp",
+    [authenticate, validator(verifyOtpSchema)],
+    UserController.verifyEmail,
   )
-  .post("/verify-otp", validator(verifyOtpSchema), UserController.verifyEmail)
-  .post("/sign-in", validator(signinSchema), UserController.signin);
+  .post(
+    "/change-password",
+    validator(changePasswordSchema),
+    UserController.changePassword,
+  );
 
 export default UserRouter;
