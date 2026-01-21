@@ -5,36 +5,33 @@ import { VerificationType } from "@infrastructure/database/generated/prisma/enum
 import { otpVerificationRepository } from "@infrastructure/database/repositories/otp-verification.repository";
 import { userRepository } from "@infrastructure/database/repositories/user.repository";
 import { AppError } from "@shared/error/AppError";
-import { compareOtp } from "@shared/utils/password";
+import { compareOtp, hashPassword } from "@shared/utils/password";
 
-type VerifyEmailInputs = {
+type ResetPasswordInputs = {
+  email: string;
+  password: string;
   otp: string;
-  type: VerificationType;
-  userId?: string;
-  email?: string;
 };
 
-export class VerifyOtpUsercase {
+export class ResetPasswordUsecase {
   constructor(
     private userRepository: IUserRepository,
     private otpVerificationRepository: IOtpVerificationRepository,
   ) {}
 
-  async execute({ otp, type, userId, email }: VerifyEmailInputs) {
-    //check if user exists
-    let user = null;
-    if (userId) user = await this.userRepository.findById(userId);
-    if (email) user = await this.userRepository.findByEmail(email);
+  async execute(inputs: ResetPasswordInputs) {
+    const { email, otp, password } = inputs;
+    const type: VerificationType = "FORGOT_PASSWORD";
+    //check if user exist
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) throw new AppError("User does not exist.");
 
-    if (!user) throw new AppError("User does not exists", 404);
-    if (user.emailVerified && type === "VERIFY_EMAIL")
-      throw new AppError("User email is already verified", 403);
-
-    //fetch otp token of the requested user from db
+    //fetch the generated token
     const token = await this.otpVerificationRepository.findByUserId(
       user.id,
       type,
     );
+
     if (!token)
       throw new AppError(
         "Otp does not match. Please resend otp and try again.",
@@ -45,22 +42,18 @@ export class VerifyOtpUsercase {
     const isOtpExpired = Date.now() > new Date(token.expiresAt).getTime();
 
     if (isMatch && !isOtpExpired) {
-      const { id, name, ...others } = user;
-      const updatedUser = new User(id, name, {
-        ...others,
-        emailVerified: true,
+      //update password
+      const updatedUser = new User(user.id, user.name, {
+        ...user,
+        password: hashPassword(password),
       });
       await this.userRepository.update(updatedUser);
       await this.otpVerificationRepository.deleteById(token.id);
-      return true;
-    } else if (isOtpExpired) {
-      await this.otpVerificationRepository.deleteById(token.id);
-      throw new AppError("Otp expired. Resend Otp and try again", 403);
-    } else throw new AppError("Invalid Otp", 403);
+    }
   }
 }
 
-export const verifyOtpUsecase = new VerifyOtpUsercase(
+export const resetPasswordUsecase = new ResetPasswordUsecase(
   userRepository,
   otpVerificationRepository,
 );

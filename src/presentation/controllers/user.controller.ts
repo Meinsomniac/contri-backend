@@ -1,6 +1,7 @@
 import { verifyOtpUsecase } from "@application/use-cases/common/verify-otp.usercase";
 import { changePasswordUsecase } from "@application/use-cases/user/change-password.usecase";
-import { forgotPasswordUsecase } from "@application/use-cases/user/forgot-password.usercase";
+import { forgotPasswordUsecase } from "@application/use-cases/user/forgot-password.usecase";
+import { resetPasswordUsecase } from "@application/use-cases/user/reset-password.usecase";
 import { sendOtpVerificationUsercase } from "@application/use-cases/user/send-otp.usecase";
 import { signinUsecase } from "@application/use-cases/user/signin.usecase";
 import { signUpUseCase } from "@application/use-cases/user/signup.usecase";
@@ -60,14 +61,15 @@ export class UserController {
   }
 
   static async verifyEmail(req: Request, res: Response) {
-    const { otp } = req.query;
+    const { otp, email, type } = req.body;
     const userId = req.user?.id;
 
-    await verifyOtpUsecase.execute(
-      otp as string,
-      userId as string,
-      "VERIFY_EMAIL",
-    );
+    await verifyOtpUsecase.execute({
+      otp: otp as string,
+      type,
+      userId,
+      email,
+    });
 
     res.status(200).json({
       success: true,
@@ -98,6 +100,16 @@ export class UserController {
     res.status(200).json({
       success: true,
       message: "Otp has been sent to email for verification.",
+    });
+  }
+
+  static async resetPassword(req: Request, res: Response) {
+    const { email, password, otp } = req.body;
+
+    await resetPasswordUsecase.execute({ email, password, otp });
+    res.status(200).json({
+      success: true,
+      message: "Password has been reset. Try login with new password",
     });
   }
 }

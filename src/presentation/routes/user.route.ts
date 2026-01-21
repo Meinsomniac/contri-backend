@@ -4,6 +4,7 @@ import { validator } from "@infrastructure/middleware/validator";
 import { UserController } from "@presentation/controllers/user.controller";
 import {
   changePasswordSchema,
+  resetPasswordSchema,
   sentEmailOtpSchema,
   signinSchema,
   signupSchema,
@@ -35,6 +36,11 @@ UserRouter.post(
     "/forgot-password",
     validator(sentEmailOtpSchema),
     UserController.forgotPassword,
+  )
+  .patch(
+    "/reset-password",
+    validator(resetPasswordSchema),
+    UserController.resetPassword,
   );
 
 export default UserRouter;
