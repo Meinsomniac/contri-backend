@@ -1,5 +1,6 @@
 import { verifyOtpUsecase } from "@application/use-cases/common/verify-otp.usercase";
 import { changePasswordUsecase } from "@application/use-cases/user/change-password.usecase";
+import { forgotPasswordUsecase } from "@application/use-cases/user/forgot-password.usercase";
 import { sendOtpVerificationUsercase } from "@application/use-cases/user/send-otp.usecase";
 import { signinUsecase } from "@application/use-cases/user/signin.usecase";
 import { signUpUseCase } from "@application/use-cases/user/signup.usecase";
@@ -62,7 +63,11 @@ export class UserController {
     const { otp } = req.query;
     const userId = req.user?.id;
 
-    await verifyOtpUsecase.execute(otp as string, userId as string);
+    await verifyOtpUsecase.execute(
+      otp as string,
+      userId as string,
+      "VERIFY_EMAIL",
+    );
 
     res.status(200).json({
       success: true,
@@ -83,6 +88,16 @@ export class UserController {
     res.status(200).json({
       success: true,
       message: "Password changed successfully",
+    });
+  }
+
+  static async forgotPassword(req: Request, res: Response) {
+    const { email } = req.query;
+
+    await forgotPasswordUsecase.execute(email as string);
+    res.status(200).json({
+      success: true,
+      message: "Otp has been sent to email for verification.",
     });
   }
 }

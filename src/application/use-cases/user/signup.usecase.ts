@@ -33,7 +33,6 @@ interface SignUpOutput {
 export class SignUpUsecase {
   constructor(
     private userRepository: IUserRepository,
-    private otpVerificationRepository: IOtpVerificationRepository,
     private emailService: IEmailService,
     private db: PrismaClient,
   ) {}
@@ -86,6 +85,7 @@ export class SignUpUsecase {
           secret: hashedOtp,
           userId: createdUser.id,
           expiresAt,
+          type: "VERIFY_EMAIL",
         },
         tx,
       );
@@ -116,7 +116,6 @@ export class SignUpUsecase {
 
 export const signUpUseCase = new SignUpUsecase(
   userRepository,
-  otpVerificationRepository,
   emailService,
   prisma,
 );

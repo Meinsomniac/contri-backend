@@ -1,17 +1,19 @@
 import { IOtpVerificationRepository } from "@application/interfaces/repositories/otp-verification.interface";
 import { OtpVerificationToken } from "@domain/entities/otp-verification.entity";
-import { PrismaClient } from "../generated/prisma/client";
-import prisma from "../prisma/prisma";
+import { PrismaClient, VerificationType } from "../generated/prisma/client";
+import prisma, { PrismaRepository } from "../prisma/prisma";
 import { TransactionClient } from "../generated/prisma/internal/prismaNamespace";
 
-export class OtpVerificationRepository implements IOtpVerificationRepository {
-  private db: PrismaClient;
+export class OtpVerificationRepository
+  extends PrismaRepository<PrismaClient["otpVerification"]>
+  implements IOtpVerificationRepository
+{
   constructor(db: PrismaClient) {
-    this.db = db;
+    super(db, db.otpVerification);
   }
   async create(
     data: Omit<OtpVerificationToken, "id" | "createdAt">,
-    tx: TransactionClient
+    tx: TransactionClient,
   ): Promise<OtpVerificationToken> {
     const client = tx ?? this.db;
     return await client.otpVerification.create({
@@ -19,14 +21,19 @@ export class OtpVerificationRepository implements IOtpVerificationRepository {
         expiresAt: data.expiresAt,
         secret: data.secret,
         userId: data.userId,
+        type: data.type,
       },
     });
   }
 
-  async findByUserId(userId: string): Promise<OtpVerificationToken | null> {
+  async findByUserId(
+    userId: string,
+    type: VerificationType,
+  ): Promise<OtpVerificationToken | null> {
     return await this.db.otpVerification.findFirst({
       where: {
         userId,
+        type,
       },
     });
   }

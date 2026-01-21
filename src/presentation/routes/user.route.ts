@@ -26,10 +26,15 @@ UserRouter.post(
     [authenticate, validator(verifyOtpSchema)],
     UserController.verifyEmail,
   )
-  .post(
+  .patch(
     "/change-password",
     [authenticate, validator(changePasswordSchema)],
     UserController.changePassword,
+  )
+  .post(
+    "/forgot-password",
+    validator(sentEmailOtpSchema),
+    UserController.forgotPassword,
   );
 
 export default UserRouter;

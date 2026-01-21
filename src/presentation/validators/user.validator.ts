@@ -12,7 +12,9 @@ export const signupSchema = z.object({
 export const signinSchema = z.object({
   body: z.object({
     email: z.email("Invalid email address").min(1, "Email is required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z
+      .string("Password is required to login")
+      .min(8, "Password must be at least 8 characters"),
   }),
 });
 
@@ -24,7 +26,7 @@ export const sentEmailOtpSchema = z.object({
 
 export const verifyOtpSchema = z.object({
   query: z.object({
-    otp: z.string().min(6, "Invalid Otp"),
+    otp: z.string("Empty otp in not allowed").min(6, "Invalid Otp"),
   }),
 });
 

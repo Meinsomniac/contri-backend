@@ -44,10 +44,19 @@ model OtpVerification {
   secret String
   expiresAt DateTime
   createdAt DateTime @default(now())
+  type VerificationType @default(VERIFY_EMAIL)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+enum VerificationType {
+  FORGOT_PASSWORD
+  FORGOT_EMAIL
+  VERIFY_EMAIL
+  CHANGE_PASSWORD
+  CHANGE_EMAIL
 }
 
 // model UserSettings {

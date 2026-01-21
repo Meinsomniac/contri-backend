@@ -8,7 +8,7 @@ import { AppError } from "@shared/error/AppError";
 import { generateTotp, generateTotpSecret } from "@shared/utils/password";
 import "dotenv/config";
 
-export class SendVerificationOtpUsecase {
+export class ForgotPasswordUsercase {
   constructor(
     private userRepository: IUserRepository,
     private otpVerificationRepository: IOtpVerificationRepository,
@@ -16,49 +16,47 @@ export class SendVerificationOtpUsecase {
   ) {}
 
   async execute(email: string) {
-    //Check if user exists
     const user = await this.userRepository.findByEmail(email);
-    if (!user || !user.isOnboarded) throw new AppError("User not found", 404);
+    if (!user || !user.isOnboarded)
+      throw new AppError("User does not exist with this email");
 
-    //check if user is already verified
-    if (user.emailVerified) throw new AppError("User is already verified", 403);
-
-    //delete any existing token for the user
-    const existingToken = await this.otpVerificationRepository.findByUserId(
+    //delete any existing token
+    const existingToken = await otpVerificationRepository.findByUserId(
       user.id,
-      "VERIFY_EMAIL",
+      "FORGOT_PASSWORD",
     );
     if (existingToken)
       await this.otpVerificationRepository.deleteById(existingToken.id);
 
     //Generate new token and store the hash
     const otp = generateTotp();
-    const hashedOtp = generateTotpSecret(otp);
+    const hashOtp = generateTotpSecret(otp);
     const expiresAt = new Date(Date.now() + 3 * 60000);
 
     await this.otpVerificationRepository.create({
       expiresAt,
-      secret: hashedOtp,
+      secret: hashOtp,
       userId: user.id,
-      type: "VERIFY_EMAIL",
+      type: "FORGOT_PASSWORD",
     });
 
     await this.emailService.sendMail({
       from: process.env.MAILING_USER as string,
       to: user.email as string,
-      subject: "Email Verification",
-      title: "Otp for email verification",
+      subject: "Forgot Password",
+      title: "Otp for forgot password email verification",
       template: "otp",
       data: {
-        title: "Email Verification",
+        title: "Forgot Password",
         otp,
         duration: "3",
       },
     });
+    return true;
   }
 }
 
-export const sendOtpVerificationUsercase = new SendVerificationOtpUsecase(
+export const forgotPasswordUsecase = new ForgotPasswordUsercase(
   userRepository,
   otpVerificationRepository,
   emailService,
