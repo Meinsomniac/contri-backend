@@ -60,3 +60,13 @@ export const resetPasswordSchema = z.object({
     otp: z.string("Empty otp in not allowed").min(6, "Invalid Otp"),
   }),
 });
+
+export const updateUserProfileSchema = z.object({
+  body: z.object({
+    id: z.string("Invalid user id"),
+    name: z.string().optional(),
+    currency: z.string().optional(),
+    language: z.string().optional(),
+    phone: z.string().optional(),
+  }),
+});

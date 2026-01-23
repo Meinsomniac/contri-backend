@@ -8,6 +8,7 @@ import {
   sentEmailOtpSchema,
   signinSchema,
   signupSchema,
+  updateUserProfileSchema,
   verifyOtpSchema,
 } from "@presentation/validators/user.validator";
 import { Router } from "express";
@@ -41,6 +42,11 @@ UserRouter.post(
     "/reset-password",
     validator(resetPasswordSchema),
     UserController.resetPassword,
+  )
+  .patch(
+    "/update-profile",
+    [authenticate, validator(updateUserProfileSchema)],
+    UserController.updateProfile,
   );
 
 export default UserRouter;

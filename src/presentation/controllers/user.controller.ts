@@ -5,6 +5,8 @@ import { resetPasswordUsecase } from "@application/use-cases/user/reset-password
 import { sendOtpVerificationUsercase } from "@application/use-cases/user/send-otp.usecase";
 import { signinUsecase } from "@application/use-cases/user/signin.usecase";
 import { signUpUseCase } from "@application/use-cases/user/signup.usecase";
+import { updateProfileUsecase } from "@application/use-cases/user/update-profile.usecase";
+import { User } from "@domain/entities/user.entity";
 import { Request, Response } from "express";
 
 export class UserController {
@@ -111,5 +113,17 @@ export class UserController {
       success: true,
       message: "Password has been reset. Try login with new password",
     });
+  }
+
+  static async updateProfile(req: Request, res: Response) {
+    const data: Partial<User> = req.body
+
+    const result = await updateProfileUsecase.execute(data)
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: result,
+    })
   }
 }
