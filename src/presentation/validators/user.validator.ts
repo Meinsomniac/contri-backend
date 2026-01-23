@@ -32,8 +32,6 @@ export const sentEmailOtpSchema = z.object({
 export const verifyOtpSchema = z.object({
   body: z.object({
     otp: z.string("Empty otp in not allowed").min(6, "Invalid Otp"),
-    email: z.email("Invalid email address").optional(),
-    // type: z.enum(VerificationType, "Invalid verification type"),
   }),
 });
 

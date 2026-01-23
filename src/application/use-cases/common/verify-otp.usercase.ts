@@ -20,11 +20,10 @@ export class VerifyOtpUsercase {
     private otpVerificationRepository: IOtpVerificationRepository,
   ) {}
 
-  async execute({ otp, type, userId, email }: VerifyEmailInputs) {
+  async execute({ otp, type, userId }: VerifyEmailInputs) {
     //check if user exists
     let user = null;
     if (userId) user = await this.userRepository.findById(userId);
-    if (email) user = await this.userRepository.findByEmail(email);
 
     if (!user) throw new AppError("User does not exists", 404);
     if (user.emailVerified && type === "VERIFY_EMAIL")

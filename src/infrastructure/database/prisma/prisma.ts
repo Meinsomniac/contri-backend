@@ -8,7 +8,7 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({
   adapter,
-  log: ["warn", "error"],
+  log: ["warn", "error", "info", "query"],
 });
 
 export abstract class PrismaRepository<TDelegate> {

@@ -25,7 +25,10 @@ interface SignUpInput {
 }
 
 interface SignUpOutput {
-  user: User;
+  user: Omit<
+    User,
+    "password" | "createdAt" | "updatedAt" | "setAvatar" | "setPassword"
+  >;
   accessToken: string;
   refreshToken: string;
 }
@@ -71,46 +74,54 @@ export class SignUpUsecase {
     });
 
     let createdUser = {} as User;
-    this.db.$transaction(async (tx) => {
-      //Save user to repository
-      createdUser = await this.userRepository.create(newUser, tx);
+    let accessToken: string;
+    let refreshToken: string;
+    const result: SignUpOutput = await this.db.$transaction(
+      async (tx) => {
+        //Save user to repository
+        createdUser = await this.userRepository.create(newUser, tx);
 
-      //send otp for email verification
-      const otp = generateTotp();
-      const hashedOtp = generateTotpSecret(otp);
-      const expiresAt = new Date(Date.now() + 3 * 60000);
+        //send otp for email verification
+        const otp = generateTotp();
+        const hashedOtp = generateTotpSecret(otp);
+        const expiresAt = new Date(Date.now() + 3 * 60000);
 
-      const otpToken = await otpVerificationRepository.create(
-        {
-          secret: hashedOtp,
-          userId: createdUser.id,
-          expiresAt,
-          type: "VERIFY_EMAIL",
-        },
-        tx,
-      );
-
-      if (otpToken) {
-        await this.emailService.sendMail({
-          from: process.env.MAILING_USER as string,
-          to: createdUser.email as string,
-          subject: "Email Verification",
-          title: "Otp for email verification",
-          template: "otp",
-          data: {
-            title: "Email Verification",
-            otp,
-            duration: "3",
+        const otpToken = await otpVerificationRepository.create(
+          {
+            secret: hashedOtp,
+            userId: createdUser.id,
+            expiresAt,
+            type: "VERIFY_EMAIL",
           },
-        });
-      }
-    });
+          tx,
+        );
 
-    //Generate tokens (placeholder logic)
-    const { password, createdAt, updatedAt, ...userInfo } = createdUser;
-    const { accessToken, refreshToken } = generateTokens(userInfo);
+        if (otpToken) {
+          await this.emailService.sendMail({
+            from: process.env.MAILING_USER as string,
+            to: createdUser.email as string,
+            subject: "Email Verification",
+            title: "Otp for email verification",
+            template: "otp",
+            data: {
+              title: "Email Verification",
+              otp,
+              duration: "3",
+            },
+          });
+        }
+        //Generate tokens (placeholder logic)
+        const { password, createdAt, updatedAt, ...userInfo } = createdUser;
+        const { accessToken, refreshToken } = generateTokens(userInfo);
+        return { user: userInfo, accessToken, refreshToken };
+      },
+      {
+        maxWait: 5000,
+        timeout: 60000,
+      },
+    );
 
-    return { user: createdUser, accessToken, refreshToken };
+    return result;
   }
 }
 

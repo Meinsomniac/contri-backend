@@ -22,7 +22,8 @@ export class UserController {
       avatarBuffer: avatar,
     };
 
-    const { accessToken, refreshToken } = await signUpUseCase.execute(input);
+    const { accessToken, refreshToken, user } =
+      await signUpUseCase.execute(input);
 
     res.status(201).json({
       success: true,
@@ -30,6 +31,7 @@ export class UserController {
       data: {
         accessToken,
         refreshToken,
+        user,
       },
     });
   }
@@ -63,14 +65,13 @@ export class UserController {
   }
 
   static async verifyEmail(req: Request, res: Response) {
-    const { otp, email, type } = req.body;
+    const { otp } = req.body;
     const userId = req.user?.id;
 
     await verifyOtpUsecase.execute({
       otp: otp as string,
-      type,
+      type: "VERIFY_EMAIL",
       userId,
-      email,
     });
 
     res.status(200).json({
@@ -116,14 +117,14 @@ export class UserController {
   }
 
   static async updateProfile(req: Request, res: Response) {
-    const data: Partial<User> = req.body
+    const data: Partial<User> = req.body;
 
-    const result = await updateProfileUsecase.execute(data)
+    const result = await updateProfileUsecase.execute(data);
 
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
       data: result,
-    })
+    });
   }
 }
