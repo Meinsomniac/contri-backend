@@ -39,17 +39,18 @@ export class UserController {
   static async signin(req: Request, res: Response) {
     const { email, password } = req.body;
 
-    const { accessToken, refreshToken } = await signinUsecase.execute(
-      email,
-      password,
-    );
+    const { accessToken, refreshToken, user, sendForEmailVerification } =
+      await signinUsecase.execute(email, password);
 
     res.status(200).json({
       success: true,
-      message: "Logged in successfully",
+      message: sendForEmailVerification
+        ? "Please verify your email to login."
+        : "Logged in successfully",
       data: {
         accessToken,
         refreshToken,
+        user,
       },
     });
   }

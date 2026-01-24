@@ -1,6 +1,7 @@
 import { IOtpVerificationRepository } from "@application/interfaces/repositories/otp-verification.interface";
 import { IUserRepository } from "@application/interfaces/repositories/user.interface";
 import { IEmailService } from "@application/interfaces/services/email.interface";
+import { User } from "@domain/entities/user.entity";
 import { otpVerificationRepository } from "@infrastructure/database/repositories/otp-verification.repository";
 import { userRepository } from "@infrastructure/database/repositories/user.repository";
 import { emailService } from "@infrastructure/services/email/email.service";
@@ -15,9 +16,12 @@ export class SendVerificationOtpUsecase {
     private emailService: IEmailService,
   ) {}
 
-  async execute(email: string) {
+  async execute(email: string, _user?: User | null) {
     //Check if user exists
-    const user = await this.userRepository.findByEmail(email);
+    let user = _user;
+    if (!_user) {
+      user = await this.userRepository.findByEmail(email);
+    }
     if (!user || !user.isOnboarded) throw new AppError("User not found", 404);
 
     //check if user is already verified
@@ -55,6 +59,7 @@ export class SendVerificationOtpUsecase {
         duration: "3",
       },
     });
+    return true;
   }
 }
 

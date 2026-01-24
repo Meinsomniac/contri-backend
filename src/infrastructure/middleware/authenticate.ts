@@ -13,7 +13,11 @@ export const authenticate = (
   if (!token) throw new AppError("No authorization token was found", 401);
 
   const { iat, exp, ...user } = decodeToken(token);
-  if (!user?.emailVerified) throw new AppError("Please verify your email", 401);
+  if (
+    !user?.emailVerified &&
+    !["/verify-otp", "/sent-email-otp"].includes(req.path)
+  )
+    throw new AppError("Please verify your email", 401);
   if (Date.now() > exp * 1000) throw new AppError("Token expired", 401);
 
   req.user = user;
