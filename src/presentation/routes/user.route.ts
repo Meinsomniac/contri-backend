@@ -13,16 +13,9 @@ import {
 } from "@presentation/validators/user.validator";
 import { Router } from "express";
 
-const UserRouter: Router = Router();
+const AuthRouter: Router = Router();
 
-UserRouter.post(
-  "/signup",
-  uploadSingle("avatar"),
-  validator(signupSchema),
-  UserController.signup,
-)
-  .post("/sign-in", validator(signinSchema), UserController.signin)
-  .post("/sent-email-otp", authenticate, UserController.sendEmailOtp)
+AuthRouter.post("/sent-email-otp", authenticate, UserController.sendEmailOtp)
   .post(
     "/verify-otp",
     [authenticate, validator(verifyOtpSchema)],
@@ -33,20 +26,10 @@ UserRouter.post(
     [authenticate, validator(changePasswordSchema)],
     UserController.changePassword,
   )
-  .post(
-    "/forgot-password",
-    validator(sentEmailOtpSchema),
-    UserController.forgotPassword,
-  )
-  .patch(
-    "/reset-password",
-    validator(resetPasswordSchema),
-    UserController.resetPassword,
-  )
   .patch(
     "/update-profile",
     [authenticate, validator(updateUserProfileSchema)],
     UserController.updateProfile,
   );
 
-export default UserRouter;
+export default AuthRouter;
