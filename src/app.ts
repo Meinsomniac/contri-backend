@@ -17,7 +17,7 @@ app.use(helmet());
 app.use(
   cors({
     credentials: true,
-  })
+  }),
 );
 
 // // Rate limiting

@@ -49,7 +49,10 @@ export class ResetPasswordUsecase {
       });
       await this.userRepository.update(updatedUser);
       await this.otpVerificationRepository.deleteById(token.id);
-    }
+    } else if (isOtpExpired) {
+      await this.otpVerificationRepository.deleteById(token.id);
+      throw new AppError("Otp expired. Resend Otp and try again", 403);
+    } else throw new AppError("Invalid Otp", 403);
   }
 }
 
