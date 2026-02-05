@@ -38,7 +38,7 @@ export class SignInUsecase {
     }
 
     //Generate tokens
-    const { password: userPassword, createdAt, updatedAt, ...userData } = user;
+    const { createdAt, updatedAt, ...userData } = user;
     const { accessToken, refreshToken } = generateTokens(userData);
 
     return {

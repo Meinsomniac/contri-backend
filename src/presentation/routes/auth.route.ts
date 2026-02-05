@@ -27,6 +27,7 @@ AuthRouter.post(
     "/reset-password",
     validator(resetPasswordSchema),
     UserController.resetPassword,
-  );
+  )
+  .post("/google-signin", UserController.googleSignIn);
 
 export default AuthRouter;

@@ -111,7 +111,7 @@ export class SignUpUsecase {
           });
         }
         //Generate tokens (placeholder logic)
-        const { password, createdAt, updatedAt, ...userInfo } = createdUser;
+        const { createdAt, updatedAt, ...userInfo } = createdUser;
         const { accessToken, refreshToken } = generateTokens(userInfo);
         return { user: userInfo, accessToken, refreshToken };
       },

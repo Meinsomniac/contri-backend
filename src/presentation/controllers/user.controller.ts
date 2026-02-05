@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { verifyOtpUsecase } from "@application/use-cases/common/verify-otp.usercase";
 import { changePasswordUsecase } from "@application/use-cases/user/change-password.usecase";
 import { forgotPasswordUsecase } from "@application/use-cases/user/forgot-password.usecase";
@@ -7,7 +8,9 @@ import { signinUsecase } from "@application/use-cases/user/signin.usecase";
 import { signUpUseCase } from "@application/use-cases/user/signup.usecase";
 import { updateProfileUsecase } from "@application/use-cases/user/update-profile.usecase";
 import { User } from "@domain/entities/user.entity";
+import { googleClient } from "@infrastructure/config/oAuth.config";
 import { Request, Response } from "express";
+import { googleSignInUseCase } from "@application/use-cases/user/google-signin.usercase";
 
 export class UserController {
   static async signup(req: Request, res: Response) {
@@ -52,6 +55,17 @@ export class UserController {
         refreshToken,
         user,
       },
+    });
+  }
+
+  static async googleSignIn(req: Request, res: Response) {
+    const { idToken } = req.body;
+    const payload = await googleSignInUseCase.execute(idToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully.",
+      data: payload,
     });
   }
 

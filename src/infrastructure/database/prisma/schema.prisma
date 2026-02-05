@@ -27,6 +27,8 @@ model User {
   language      String   @default("en")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  authProvider  AuthProvider @default(EMAIL)
+  authId        String?  // For social login users, store the provider's user ID
 
   // Relations (will be added later as we create other models)
   // settings UserSettings?
@@ -57,6 +59,12 @@ enum VerificationType {
   VERIFY_EMAIL
   CHANGE_PASSWORD
   CHANGE_EMAIL
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  APPLE
 }
 
 // model UserSettings {

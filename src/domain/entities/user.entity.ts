@@ -1,3 +1,4 @@
+type AuthProvider = "EMAIL" | "GOOGLE" | "APPLE";
 export class User {
   public readonly id: string;
   public name: string;
@@ -7,6 +8,8 @@ export class User {
   public avatar: string | null = null;
   public emailVerified: boolean = false;
   public phoneVerified: boolean = false;
+  public authProvider: AuthProvider = "EMAIL";
+  public authId: string | null = null; // For social login users, store the provider's user ID
   public isOnboarded: boolean = false;
   public currency: string = "USD";
   public language: string = "en";
@@ -23,12 +26,14 @@ export class User {
       avatar?: string | null;
       emailVerified?: boolean;
       phoneVerified?: boolean;
+      authProvider?: AuthProvider;
+      authId?: string | null;
       isOnboarded?: boolean;
       currency?: string;
       language?: string;
       createdAt?: Date;
       updatedAt?: Date;
-    }
+    },
   ) {
     this.id = id;
     this.name = name;
@@ -39,6 +44,8 @@ export class User {
       this.avatar = options.avatar ?? null;
       this.emailVerified = options.emailVerified ?? false;
       this.phoneVerified = options.phoneVerified ?? false;
+      this.authProvider = options.authProvider ?? "EMAIL";
+      this.authId = options.authId ?? null;
       this.isOnboarded = options.isOnboarded ?? false;
       this.currency = options.currency ?? "USD";
       this.language = options.language ?? "en";
