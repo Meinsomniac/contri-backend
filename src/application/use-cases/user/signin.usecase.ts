@@ -1,23 +1,12 @@
-import { IOtpVerificationRepository } from "@application/interfaces/repositories/otp-verification.interface";
 import { IUserRepository } from "@application/interfaces/repositories/user.interface";
-import { IEmailService } from "@application/interfaces/services/email.interface";
-import { otpVerificationRepository } from "@infrastructure/database/repositories/otp-verification.repository";
 import { userRepository } from "@infrastructure/database/repositories/user.repository";
-import { emailService } from "@infrastructure/services/email/email.service";
 import { AppError } from "@shared/error/AppError";
 import { comparePassword } from "@shared/utils/password";
 import { generateTokens } from "@shared/utils/token";
-import {
-  sendOtpVerificationUsercase,
-  SendVerificationOtpUsecase,
-} from "./send-otp.usecase";
+import { sendOtpVerificationUsercase } from "./send-otp.usecase";
 
 export class SignInUsecase {
-  constructor(
-    private userRepository: IUserRepository,
-    private otpVerificationRepository: IOtpVerificationRepository,
-    private emalService: IEmailService,
-  ) {}
+  constructor(private userRepository: IUserRepository) {}
 
   async execute(email: string, password: string) {
     //fetch user by email
@@ -50,8 +39,4 @@ export class SignInUsecase {
   }
 }
 
-export const signinUsecase = new SignInUsecase(
-  userRepository,
-  otpVerificationRepository,
-  emailService,
-);
+export const signinUsecase = new SignInUsecase(userRepository);

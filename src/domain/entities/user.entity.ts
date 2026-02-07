@@ -1,7 +1,10 @@
+import { nanoid } from "@shared/functions";
+
 type AuthProvider = "EMAIL" | "GOOGLE" | "APPLE";
 export class User {
   public readonly id: string;
   public name: string;
+  public publicId: string;
   public email: string | null = null;
   public phone: string | null = null;
   public password: string | null = null; // Hashed password (nullable for social logins)
@@ -20,6 +23,7 @@ export class User {
     id: string,
     name: string,
     options: {
+      publicId?: string;
       email?: string | null;
       phone?: string | null;
       password?: string | null;
@@ -37,6 +41,7 @@ export class User {
   ) {
     this.id = id;
     this.name = name;
+    this.publicId = options?.publicId || this.generatePublicId();
     if (options) {
       this.email = options.email ?? null;
       this.phone = options.phone ?? null;
@@ -59,6 +64,11 @@ export class User {
   public setAvatar(url: string): void {
     this.avatar = url;
     this.updatedAt = new Date();
+  }
+
+  public generatePublicId(): string {
+    this.updatedAt = new Date();
+    return `user_${nanoid()}`;
   }
 
   public setPassword(hashedPassword: string | null): void {

@@ -27,7 +27,12 @@ interface SignUpInput {
 interface SignUpOutput {
   user: Omit<
     User,
-    "password" | "createdAt" | "updatedAt" | "setAvatar" | "setPassword"
+    | "password"
+    | "createdAt"
+    | "updatedAt"
+    | "setAvatar"
+    | "setPassword"
+    | "generatePublicId"
   >;
   accessToken: string;
   refreshToken: string;
@@ -74,8 +79,6 @@ export class SignUpUsecase {
     });
 
     let createdUser = {} as User;
-    let accessToken: string;
-    let refreshToken: string;
     const result: SignUpOutput = await this.db.$transaction(
       async (tx) => {
         //Save user to repository

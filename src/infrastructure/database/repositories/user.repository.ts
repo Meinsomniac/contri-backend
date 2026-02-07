@@ -21,6 +21,7 @@ export class UserRepository implements IUserRepository {
     const createdUser = await client.user.create({
       data: {
         name: user.name,
+        publicId: user.publicId,
         email: user.email,
         phone: user.phone,
         password: user.password,

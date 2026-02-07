@@ -14,43 +14,82 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String?   @unique
-  phone         String?  @unique
+  id            String       @id @default(cuid())
+  publicId      String       @unique
+  email         String?      @unique
+  phone         String?      @unique
   name          String
   avatar        String?
-  password      String?  // Nullable for social login users
-  emailVerified Boolean  @default(false)
-  phoneVerified Boolean  @default(false)
-  isOnboarded   Boolean  @default(false)
-  currency      String   @default("USD")
-  language      String   @default("en")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  password      String? // Nullable for social login users
+  emailVerified Boolean      @default(false)
+  phoneVerified Boolean      @default(false)
+  isOnboarded   Boolean      @default(false)
+  isPlaceholder Boolean      @default(false) // For users created via social login without email/phone
+  currency      String       @default("USD")
+  language      String       @default("en")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   authProvider  AuthProvider @default(EMAIL)
-  authId        String?  // For social login users, store the provider's user ID
+  authId        String? // For social login users, store the provider's user ID
 
-  // Relations (will be added later as we create other models)
+  //Relations
   // settings UserSettings?
+  friends            FriendShip[]        @relation("UserFriends")
+  friendOf           FriendShip[]        @relation("FriendOf")
+  contactIdentifiers ContactIdentifier[]
+
+  otpVerificationsTokens OtpVerification[]
 
   @@index([phone])
   @@index([email])
   @@index([createdAt])
-
-  otpVerificationsTokens OtpVerification[]
+  @@index([isPlaceholder])
 }
 
 model OtpVerification {
-  id String @id @default(cuid())
-  userId String
-  secret String
+  id        String           @id @default(cuid())
+  userId    String
+  secret    String
   expiresAt DateTime
-  createdAt DateTime @default(now())
-  type VerificationType @default(VERIFY_EMAIL)
+  createdAt DateTime         @default(now())
+  type      VerificationType @default(VERIFY_EMAIL)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model FriendShip {
+  id          String           @id @default(cuid())
+  userId      String
+  friendId    String
+  displayName String
+  status      FriendShipStatus @default(ACTIVE)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user   User @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
+  @@index([status])
+}
+
+model ContactIdentifier {
+  id             String         @id @default(cuid())
+  userId         String
+  identifier     String
+  identifierType IdentifierType
+  createdAt      DateTime       @default(now())
+
+  //Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([identifier, identifierType])
+  @@index([userId])
+  @@index([identifier, identifierType])
 }
 
 enum VerificationType {
@@ -67,24 +106,35 @@ enum AuthProvider {
   APPLE
 }
 
+enum FriendShipStatus {
+  ACTIVE
+  REMOVED
+  BLOCKED
+}
+
+enum IdentifierType {
+  EMAIL
+  PHONE
+}
+
 // model UserSettings {
 //   id                     String   @id @default(cuid())
 //   userId                 String   @unique
 //   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
 //   // Notification Preferences
 //   pushEnabled            Boolean  @default(true)
 //   emailEnabled           Boolean  @default(true)
 //   expenseNotifications   Boolean  @default(true)
 //   paymentNotifications   Boolean  @default(true)
 //   hubInviteNotifications Boolean  @default(true)
-  
+
 //   // App Preferences
 //   defaultCurrency        String   @default("USD")
 //   defaultSplitMethod     String   @default("EQUAL") // EQUAL, PERCENTAGE, SHARES, CUSTOM
 //   theme                  String   @default("light")
 //   decimalPrecision       Int      @default(2)
-  
+
 //   createdAt              DateTime @default(now())
 //   updatedAt              DateTime @updatedAt
 
