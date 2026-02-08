@@ -1,8 +1,16 @@
-import { IUserRepository } from "@application/interfaces/repositories/user.interface";
+import {
+  GetFriendsOutput,
+  IUserRepository,
+} from "@application/interfaces/repositories/user.interface";
 import { User } from "@domain/entities/user.entity";
 import { PrismaClient, User as DBUser } from "../generated/prisma/client";
 import prisma from "../prisma/prisma";
-import { TransactionClient } from "../generated/prisma/internal/prismaNamespace";
+import {
+  TransactionClient,
+  UserDelegate,
+  UserInclude,
+} from "../generated/prisma/internal/prismaNamespace";
+import { UserArgs } from "@prisma/client/runtime/client";
 
 export class UserRepository implements IUserRepository {
   private db: PrismaClient;
@@ -56,6 +64,49 @@ export class UserRepository implements IUserRepository {
     });
 
     return dbUser ? this.mapToEntity(dbUser) : null;
+  }
+  async getFriends(userId: string): Promise<GetFriendsOutput> {
+    const friend = await this.db.user.findFirst({
+      where: { id: userId },
+      select: {
+        friends: {
+          select: {
+            displayName: true,
+            id: true,
+            friend: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
+        friendOf: {
+          where: {
+            user: {
+              friendOf: {
+                none: { userId },
+              },
+            },
+          },
+          select: {
+            id: true,
+            displayName: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return friend;
   }
 
   async existsByEmail(email: string): Promise<boolean> {

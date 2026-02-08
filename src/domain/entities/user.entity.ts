@@ -14,6 +14,7 @@ export class User {
   public authProvider: AuthProvider = "EMAIL";
   public authId: string | null = null; // For social login users, store the provider's user ID
   public isOnboarded: boolean = false;
+  public isPlaceholder: boolean = false;
   public currency: string = "USD";
   public language: string = "en";
   public createdAt: Date;
@@ -33,6 +34,7 @@ export class User {
       authProvider?: AuthProvider;
       authId?: string | null;
       isOnboarded?: boolean;
+      isPlaceholder?: boolean;
       currency?: string;
       language?: string;
       createdAt?: Date;
@@ -42,24 +44,21 @@ export class User {
     this.id = id;
     this.name = name;
     this.publicId = options?.publicId || this.generatePublicId();
-    if (options) {
-      this.email = options.email ?? null;
-      this.phone = options.phone ?? null;
-      this.password = options.password ?? null;
-      this.avatar = options.avatar ?? null;
-      this.emailVerified = options.emailVerified ?? false;
-      this.phoneVerified = options.phoneVerified ?? false;
-      this.authProvider = options.authProvider ?? "EMAIL";
-      this.authId = options.authId ?? null;
-      this.isOnboarded = options.isOnboarded ?? false;
-      this.currency = options.currency ?? "USD";
-      this.language = options.language ?? "en";
-      this.createdAt = options.createdAt ?? new Date();
-      this.updatedAt = options.updatedAt ?? new Date();
-    } else {
-      this.createdAt = new Date();
-      this.updatedAt = new Date();
-    }
+    // if (options) {
+    this.email = options.email ?? null;
+    this.phone = options.phone ?? null;
+    this.password = options.password ?? null;
+    this.avatar = options.avatar ?? null;
+    this.emailVerified = options.emailVerified ?? false;
+    this.phoneVerified = options.phoneVerified ?? false;
+    this.authProvider = options.authProvider ?? "EMAIL";
+    this.authId = options.authId ?? null;
+    this.isOnboarded = options.isOnboarded ?? false;
+    this.isPlaceholder = options.isPlaceholder ?? false;
+    this.currency = options.currency ?? "USD";
+    this.language = options.language ?? "en";
+    this.createdAt = options.createdAt ?? new Date();
+    this.updatedAt = options.updatedAt ?? new Date();
   }
   public setAvatar(url: string): void {
     this.avatar = url;
