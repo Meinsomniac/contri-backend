@@ -1,8 +1,5 @@
 import { User } from "@domain/entities/user.entity";
-import {
-  TransactionClient,
-  UserDelegate,
-} from "@infrastructure/database/generated/prisma/internal/prismaNamespace";
+import { TransactionClient } from "@infrastructure/database/generated/prisma/internal/prismaNamespace";
 
 export type GetFriendsOutput = {
   friends: {

@@ -5,12 +5,7 @@ import {
 import { User } from "@domain/entities/user.entity";
 import { PrismaClient, User as DBUser } from "../generated/prisma/client";
 import prisma from "../prisma/prisma";
-import {
-  TransactionClient,
-  UserDelegate,
-  UserInclude,
-} from "../generated/prisma/internal/prismaNamespace";
-import { UserArgs } from "@prisma/client/runtime/client";
+import { TransactionClient } from "../generated/prisma/internal/prismaNamespace";
 
 export class UserRepository implements IUserRepository {
   private db: PrismaClient;

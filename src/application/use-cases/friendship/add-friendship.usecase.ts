@@ -1,3 +1,4 @@
+import { IContactIdentifierRepository } from "@application/interfaces/repositories/contact.interface";
 import { IFriendshipRepository } from "@application/interfaces/repositories/friendship.interface";
 import { IUserRepository } from "@application/interfaces/repositories/user.interface";
 import { User } from "@domain/entities/user.entity";
@@ -6,6 +7,7 @@ import {
   PrismaClient,
 } from "@infrastructure/database/generated/prisma/client";
 import prisma from "@infrastructure/database/prisma/prisma";
+import { contactRepository } from "@infrastructure/database/repositories/contact.repository";
 import { friendshipRepository } from "@infrastructure/database/repositories/friendship.repository";
 import { userRepository } from "@infrastructure/database/repositories/user.repository";
 import { AppError } from "@shared/error/AppError";
@@ -49,36 +51,25 @@ export class AddFriendshipUseCase {
       }
     }
 
-    //check if identifier user already exists
-    const identifierCount = await this.db.contactIdentifier.count({
-      where: {
-        identifier,
-        identifierType,
-      },
-    });
-    const identiferExists = identifierCount > 0;
-
     const result: boolean = await this.db.$transaction(async (tx) => {
       //Create a placeholder user if the friend doesn't exist
       if (!friendToAdd) {
-        const userToCreatee = new User("", name, {
+        const userToCreate = new User("", name, {
           email: identifierType === "EMAIL" ? identifier : undefined,
           phone: identifierType === "PHONE" ? identifier : undefined,
           isPlaceholder: true,
         });
         friendToAdd = await tx.user.create({
           data: {
-            publicId: userToCreatee.publicId,
-            email: userToCreatee.email,
-            phone: userToCreatee.phone,
+            publicId: userToCreate.publicId,
+            email: userToCreate.email,
+            phone: userToCreate.phone,
             name,
             isPlaceholder: true,
           },
         });
-      }
 
-      //Create contact identifier if it doesn't exist for future linking when user onboards
-      if (!identiferExists) {
+        //Create contact identifier if it doesn't exist for future linking when user onboards
         await tx.contactIdentifier.create({
           data: {
             userId: friendToAdd.id,
