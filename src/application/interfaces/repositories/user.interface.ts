@@ -31,5 +31,5 @@ export interface IUserRepository {
   getFriends(userId: string): Promise<GetFriendsOutput>;
   existsByEmail(email: string): Promise<boolean>;
   existsByPhone(phone: string): Promise<boolean>;
-  update(user: User): Promise<User>;
+  update(user: User, tx?: TransactionClient): Promise<User>;
 }

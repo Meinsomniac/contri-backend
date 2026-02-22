@@ -117,8 +117,9 @@ export class UserRepository implements IUserRepository {
     return count > 0;
   }
 
-  async update(user: User): Promise<User> {
-    const updatedUser = await this.db.user.update({
+  async update(user: User, tx?: TransactionClient): Promise<User> {
+    const client = tx ?? this.db;
+    const updatedUser = await client.user.update({
       where: { id: user.id },
       data: {
         ...user,

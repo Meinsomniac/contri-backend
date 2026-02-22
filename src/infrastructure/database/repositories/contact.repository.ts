@@ -76,6 +76,15 @@ export class ContactRepository implements IContactIdentifierRepository {
 
     return contact;
   }
+
+  async deleteContacts(userId: string, tx?: TransactionClient): Promise<void> {
+    const client = tx ?? this.db;
+    await client.contactIdentifier.deleteMany({
+      where: {
+        userId,
+      },
+    });
+  }
 }
 
 export const contactRepository = new ContactRepository(prisma);

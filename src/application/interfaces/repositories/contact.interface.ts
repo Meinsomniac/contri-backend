@@ -22,4 +22,9 @@ export interface IContactIdentifierRepository {
     identifierType: IdentifierType,
   ): Promise<ContactIdentifier | null>;
   findByIdentifier(identifier: string): Promise<ContactIdentifier | null>;
+  deleteContacts(userId: string, tx?: TransactionClient): Promise<void>;
+  // findByEmailOrPhoneIdentifier(
+  //   identifier: string,
+  //   identifierType: IdentifierType,
+  // ): Promise<ContactIdentifier | null>;
 }

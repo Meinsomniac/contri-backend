@@ -1,9 +1,11 @@
+import { IContactIdentifierRepository } from "@application/interfaces/repositories/contact.interface";
 import { IOtpVerificationRepository } from "@application/interfaces/repositories/otp-verification.interface";
 import { IUserRepository } from "@application/interfaces/repositories/user.interface";
 import { IEmailService } from "@application/interfaces/services/email.interface";
 import { User } from "@domain/entities/user.entity";
 import { PrismaClient } from "@infrastructure/database/generated/prisma/client";
 import prisma from "@infrastructure/database/prisma/prisma";
+import { contactRepository } from "@infrastructure/database/repositories/contact.repository";
 import { otpVerificationRepository } from "@infrastructure/database/repositories/otp-verification.repository";
 import { userRepository } from "@infrastructure/database/repositories/user.repository";
 import CloudinaryService from "@infrastructure/services/cloudinary.service";
@@ -41,17 +43,28 @@ interface SignUpOutput {
 export class SignUpUsecase {
   constructor(
     private userRepository: IUserRepository,
+    private contactRepository: IContactIdentifierRepository,
     private emailService: IEmailService,
     private db: PrismaClient,
   ) {}
 
   async execute(input: SignUpInput): Promise<SignUpOutput> {
-    // Vaidate required fields
-
-    if (input.email && (await this.userRepository.existsByEmail(input.email))) {
+    // check if the user is placeholder user and update it instead of creating a new one
+    const contact = await this.contactRepository.findByIdentifier(
+      input.email as string,
+    );
+    if (
+      !contact &&
+      input.email &&
+      (await this.userRepository.existsByEmail(input.email))
+    ) {
       throw new AppError("Email already in use", 409);
     }
-    if (input.phone && (await this.userRepository.existsByPhone(input.phone))) {
+    if (
+      !contact &&
+      input.phone &&
+      (await this.userRepository.existsByPhone(input.phone))
+    ) {
       throw new AppError("Phone number already in use", 409);
     }
 
@@ -70,19 +83,23 @@ export class SignUpUsecase {
     }
 
     //Create user entity
-    const newUser = new User("", input.name, {
+    const newUser = new User(contact?.userId || "", input.name, {
       email: input.email ?? null,
       phone: input.phone ?? null,
       password: hashedPassword ?? null,
       avatar: avatarUrl ?? null,
       isOnboarded: true,
+      isPlaceholder: false,
     });
 
     let createdUser = {} as User;
     const result: SignUpOutput = await this.db.$transaction(
       async (tx) => {
         //Save user to repository
-        createdUser = await this.userRepository.create(newUser, tx);
+        if (contact) {
+          createdUser = await this.userRepository.update(newUser, tx);
+          await this.contactRepository.deleteContacts(contact.id, tx);
+        } else createdUser = await this.userRepository.create(newUser, tx);
 
         //send otp for email verification
         const otp = generateTotp();
@@ -130,6 +147,7 @@ export class SignUpUsecase {
 
 export const signUpUseCase = new SignUpUsecase(
   userRepository,
+  contactRepository,
   emailService,
   prisma,
 );
