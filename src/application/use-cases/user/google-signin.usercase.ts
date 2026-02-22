@@ -8,11 +8,14 @@ import { User } from "@domain/entities/user.entity";
 import prisma from "@infrastructure/database/prisma/prisma";
 import { PrismaClient } from "@infrastructure/database/generated/prisma/client";
 import { generateTokens } from "@shared/utils/token";
+import { IContactIdentifierRepository } from "@application/interfaces/repositories/contact.interface";
+import { contactRepository } from "@infrastructure/database/repositories/contact.repository";
 
 export class GoogleSignInUseCase {
   constructor(
     private googleClient: OAuth2Client,
     private userRepo: IUserRepository,
+    private contactRepo: IContactIdentifierRepository,
     private db: PrismaClient,
   ) {}
   async execute(idToken: string) {
@@ -23,7 +26,7 @@ export class GoogleSignInUseCase {
     const payload = ticket.getPayload();
 
     if (!payload) {
-      throw new Error("Invalid Google ID token");
+      throw new AppError("Invalid Google ID token", 400);
     }
 
     const email = payload.email;
@@ -32,50 +35,54 @@ export class GoogleSignInUseCase {
     const avatar = payload.picture;
 
     if (!email || !name || !googleId) {
-      throw new Error("Missing required user information from Google");
+      throw new AppError("Missing required user information from Google", 400);
     }
 
-    let result = null;
-    let user = await this.userRepo.findByEmail(email);
-    if (user?.id && user.authProvider !== "GOOGLE") {
-      const updatedUser = new User(user.id, user.name, {
-        ...user,
-        authProvider: "GOOGLE",
-        authId: googleId,
-        isOnboarded: true,
-        emailVerified: true,
-        avatar,
-      });
-      await this.userRepo.update(updatedUser);
-      const { createdAt, updatedAt, ...userInfo } = updatedUser;
-      const { accessToken, refreshToken } = generateTokens(userInfo);
-      result = { user: userInfo, accessToken, refreshToken };
-    } else if (!user) {
-      const newUser = new User("", name, {
-        email,
-        emailVerified: true,
-        avatar,
-        authProvider: "GOOGLE",
-        authId: googleId,
-        isOnboarded: true,
-      });
+    let existingUser = await this.userRepo.findByEmail(email);
+    let result = await this.db.$transaction(async (tx) => {
+      if (
+        existingUser &&
+        (existingUser?.isPlaceholder ||
+          !existingUser?.emailVerified ||
+          !existingUser.isOnboarded)
+      ) {
+        const updatedUser = new User(existingUser.id, existingUser.name, {
+          ...existingUser,
+          authProvider: "GOOGLE",
+          authId: googleId,
+          isOnboarded: true,
+          emailVerified: true,
+          isPlaceholder: false,
+          avatar,
+        });
+        await this.userRepo.update(updatedUser, tx);
+        if (existingUser.isPlaceholder) {
+          this.contactRepo.deleteContacts(existingUser.id, tx);
+        }
+        const { createdAt, updatedAt, ...userInfo } = updatedUser;
+        const { accessToken, refreshToken } = generateTokens(userInfo);
+        return { user: userInfo, accessToken, refreshToken };
+      } else if (!existingUser) {
+        const newUser = new User("", name, {
+          email,
+          emailVerified: true,
+          avatar,
+          authProvider: "GOOGLE",
+          authId: googleId,
+          isOnboarded: true,
+        });
 
-      result = await this.db.$transaction(async (tx) => {
         const createdUser = await this.userRepo.create(newUser, tx);
         const { createdAt, updatedAt, ...userInfo } = createdUser;
         const { accessToken, refreshToken } = generateTokens(userInfo);
         return { user: userInfo, accessToken, refreshToken };
-      });
-    } else if (user.authProvider === "GOOGLE") {
-      const { createdAt, updatedAt, ...userInfo } = user;
-      const { accessToken, refreshToken } = generateTokens(userInfo);
-      result = { user: userInfo, accessToken, refreshToken };
-    } else {
-      throw new AppError(
-        "Email already in use with a different authentication method",
-        409,
-      );
-    }
+      } else {
+        throw new AppError(
+          "Email already in use with a different authentication method",
+          409,
+        );
+      }
+    });
 
     return result;
   }
@@ -84,5 +91,6 @@ export class GoogleSignInUseCase {
 export const googleSignInUseCase = new GoogleSignInUseCase(
   googleClient,
   userRepository,
+  contactRepository,
   prisma,
 );
