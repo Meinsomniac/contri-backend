@@ -47,7 +47,8 @@ export class AddFriendshipUseCase {
         friendToAdd.id,
       );
       if (isAlreadyFriend) {
-        throw new AppError("Friendship already exists", 400);
+        console.log("Friendship already exists");
+        return true;
       }
     }
 
