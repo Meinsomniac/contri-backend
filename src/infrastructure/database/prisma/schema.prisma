@@ -211,7 +211,7 @@ model Expense {
   notes          String?
   expenseDate    DateTime      @default(now()) @db.Date
   status         ExpenseStatus @default(ACTIVE)
-  groupId        String
+  groupId        String?
   createdBy      String
   // Client-generated UUID — prevents duplicate submissions on network retry
   idempotencyKey String?       @unique
@@ -221,7 +221,7 @@ model Expense {
   deletedBy      String?
 
   // Relations
-  group      Group            @relation(fields: [groupId], references: [id])
+  group      Group?           @relation(fields: [groupId], references: [id])
   creator    User             @relation("ExpenseCreator", fields: [createdBy], references: [id])
   payers     ExpensePayer[]
   splits     ExpenseSplit[]
